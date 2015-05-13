@@ -1,0 +1,57 @@
+{% load staticfiles %}
+<html>
+<head>
+    <title>Smarterer test project</title>
+    <script src="{% static "jquery-2.1.4.min.js" %}"></script>
+    <script src="{% static "smarterer.js" %}"></script>
+    <link type="text/css" href="{% static "site.css" %}" rel="stylesheet" />
+</head>
+    <body>
+     {% csrf_token %}
+        <div id="controls">
+            Items on page:
+        <select name="perpage" id="i_perpage">
+            {% for i in page_count %}
+                <option name="{{ forloop.counter }}">{{ forloop.counter }}</option>
+            {% endfor %}
+                <option name="10" selected>10</option>
+            {% for i in page_count %}
+                <option name="{{ forloop.counter }}0">{{ forloop.counter }}0</option>
+            {% endfor %}
+        </select>
+
+            Start at page: <input type="text" name="start_page" id="i_start_page" value="1" size="3" />
+            Sort:
+            <select name="sort" id="i_sort">
+                <option value="des">Descending</option>
+                <option value="asc">Ascending</option>
+            </select>
+            Search question: <input type="text" id="i_search" name="search" value="" size="15"/>
+            <input type="submit" name="i_reload"  id="i_reload" value="Reload" />
+        </div>
+        <div id="questions"></div>
+
+        <div id="edit_window">
+            <table>
+                <tr>
+                    <td>Question:</td>
+                    <td><input type="text" name="question" id="e_question" /></td>
+                </tr>
+                <tr>
+                    <td>Answers: <br />
+                    <button id="add_answer">New Answer</button></td>
+                    <td id="answer_list">
+
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+        <div id="answer_clone">
+            <input type="text" class="answer" name="answer[]" />
+            Correct: <input type="radio" name="correct" class="a_correct" />
+            <div class="delete-question"> </div>
+        </div>
+    </body>
+
+</html>
