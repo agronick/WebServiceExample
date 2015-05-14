@@ -10,15 +10,15 @@
      {% csrf_token %}
         <div id="controls">
             Items on page:
-        <select name="perpage" id="i_perpage">
-            {% for i in page_count %}
-                <option name="{{ forloop.counter }}">{{ forloop.counter }}</option>
-            {% endfor %}
-                <option name="10" selected>10</option>
-            {% for i in page_count %}
-                <option name="{{ forloop.counter }}0">{{ forloop.counter }}0</option>
-            {% endfor %}
-        </select>
+            <select name="perpage" id="i_perpage">
+                {% for i in page_count %}
+                    <option name="{{ forloop.counter }}">{{ forloop.counter }}</option>
+                {% endfor %}
+                    <option name="10" selected>10</option>
+                {% for i in page_count %}
+                    <option name="{{ forloop.counter }}0">{{ forloop.counter }}0</option>
+                {% endfor %}
+            </select>
 
             Start at page: <input type="text" name="start_page" id="i_start_page" value="1" size="3" />
             Sort:
@@ -28,29 +28,47 @@
             </select>
             Search question: <input type="text" id="i_search" name="search" value="" size="15"/>
             <input type="submit" name="i_reload"  id="i_reload" value="Reload" />
+            <button name="new_question" id="i_new">New Question</button>
         </div>
         <div id="questions"></div>
 
-        <div id="edit_window">
-            <table>
-                <tr>
-                    <td>Question:</td>
-                    <td><input type="text" name="question" id="e_question" /></td>
-                </tr>
-                <tr>
-                    <td>Answers: <br />
-                    <button id="add_answer">New Answer</button></td>
-                    <td id="answer_list">
-
-                    </td>
-                </tr>
-
-            </table>
+        <div id="edit_wrapper">
+            <div id="edit_window">
+                <button id="window_close">Close</button>
+                <div class="center">
+                Edit Question
+                </div>
+                <form name="q_edit" action="#">
+                    <input type="hidden" id="a_id" name="a_id"/>
+                    <table width="100%">
+                        <tr valign="top">
+                            <td>Question:</td>
+                            <td>
+                                <textarea name="question" id="a_question"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="center">
+                                <button id="add_answer">New Answer</button>
+                                <button id="save_answer">Save Question</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Answers: </td>
+                            <td id="answer_list">
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
         </div>
+
         <div id="answer_clone">
-            <input type="text" class="answer" name="answer[]" />
-            Correct: <input type="radio" name="correct" class="a_correct" />
-            <div class="delete-question"> </div>
+            <div class="answer_wrap">
+                <input type="text" class="answer" name="answer[]" />
+                <label class="small">&nbsp;&nbsp;&nbsp;Correct:</label> <input type="radio" name="correct[]" class="a_correct" />
+                <button name="delete_ans[]" class="delete_ans">Delete</button>
+            </div>
         </div>
     </body>
 

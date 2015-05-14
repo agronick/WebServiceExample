@@ -6,6 +6,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 logger = logging.getLogger('django')
 
+post_error = 'Expected a post request'
+
 def index(request):
     return HttpResponse("/questions - question list")
 
@@ -39,16 +41,40 @@ def single(request, id):
 
 def update(request, id):
     if request.method != 'POST':
-        return return_json('Expected a post request', 400)
+        return return_json(post_error, 400)
 
     try:
         question = Question.objects.get(id)
     except ObjectDoesNotExist:
         return return_json('Could not find question with id ' + id, 404)
 
+def new(request):
+    if request.method != 'POST':
+        return return_json(post_error, 400)
+
+    question_text = request.POST.get('question', '')
+    answers = request.POST.get('answers', [])
+    correct_index = request.POST.get('correct', '')
+
+    q = Question(question=question_text)
+    q.save()
+
+    i = 0;
+    for answer in answers:
+        a = Answer(question=q, choice=answer, correct=(i == correct_index))
+        a.save()
+        ++i
+
+    data = {
+        'result': 'success',
+        'data': q.id
+    }
+    json_result = json.JSONEncoder().encode(data)
+    return HttpResponse(json_result, content_type="application/json")
+
 def delete(request):
     if request.method != 'POST':
-        return return_json('Expected a post request', 400)
+        return return_json(post_error, 400)
 
     id = request.POST.get('id', '')
     if not id or not is_number(id):
@@ -84,16 +110,23 @@ def questions_with_answer(key):
     q_model = Question.objects.get(pk=key)
 
 
-    correct = Answer.objects.filter(question=key, correct=True).values('choice', 'id')[0];
+    correct = Answer.objects.filter(question=key, correct=True).values('choice', 'id');
     wrong_ans = {}
     wrong = Answer.objects.filter(question=key, correct=False).values('choice', 'id')
     for i in wrong:
         wrong_ans[i['id']] = i['choice']
 
+
+    answer = {}
+
+    if (correct.count()):
+        answer.correct['id'] = correct['choice']
+
+
     question = {
         'id': q_model.id,
         'question': q_model.question,
-        'correct_answer': {correct['id'] : correct['choice']},
+        'correct_answer': answer,
         'wrong_answers': wrong_ans
     }
     return question
