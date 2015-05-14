@@ -1,17 +1,16 @@
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from questions.models import Question, Answer
-import logging
-import sys
 import simplejson as json
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
 
-logger = logging.getLogger('django')
 
 post_error = 'Expected a post request'
 
 def index(request):
     return HttpResponse("/questions - question list")
 
+@csrf_exempt
 def list(request):
 
     per_page = int(request.POST.get('per_page', 10))
@@ -40,6 +39,7 @@ def single(request, id):
     json_result = json.JSONEncoder().encode(questions)
     return return_json(json_result)
 
+@csrf_exempt
 def update(request, id):
     if request.method != 'POST':
         return return_json(post_error, 400)
@@ -66,6 +66,7 @@ def update(request, id):
     json_result = json.JSONEncoder().encode(data)
     return return_json(json_result)
 
+@csrf_exempt
 def new(request):
     if request.method != 'POST':
         return return_json(post_error)
@@ -94,6 +95,7 @@ def edit_post_vars(request):
     correct_index =  int(request.POST.get('correct', ''))
     return question_text, answers, correct_index
 
+@csrf_exempt
 def delete(request):
     if request.method != 'POST':
         return return_json(post_error, 400)
