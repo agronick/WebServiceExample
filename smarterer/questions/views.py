@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from questions.models import Question, Answer
 import logging
+import sys
 import simplejson as json
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -43,18 +44,33 @@ def update(request, id):
     if request.method != 'POST':
         return return_json(post_error, 400)
 
-    try:
-        question = Question.objects.get(id)
-    except ObjectDoesNotExist:
-        return return_json('Could not find question with id ' + id, 404)
+
+    question_text, answers, correct_index = edit_post_vars(request)
+
+    q = Question.objects.get(pk=id)
+    q.question = question_text
+    q.save()
+
+    q.answer_set.all().delete()
+
+    i=0;
+    for answer in answers:
+        a = Answer(question=q, choice=answer, correct=(i == correct_index))
+        a.save()
+        i += 1
+
+    data = {
+        'result': 'success',
+        'id': id,
+    }
+    json_result = json.JSONEncoder().encode(data)
+    return return_json(json_result)
 
 def new(request):
     if request.method != 'POST':
-        return return_json(post_error, 400)
+        return return_json(post_error)
 
-    question_text = request.POST.get('question', '')
-    answers = request.POST.get('answers', [])
-    correct_index = request.POST.get('correct', '')
+    question_text, answers, correct_index = edit_post_vars(request)
 
     q = Question(question=question_text)
     q.save()
@@ -63,14 +79,20 @@ def new(request):
     for answer in answers:
         a = Answer(question=q, choice=answer, correct=(i == correct_index))
         a.save()
-        ++i
+        i += 1
 
     data = {
         'result': 'success',
-        'data': q.id
+        'id': q.id
     }
     json_result = json.JSONEncoder().encode(data)
     return HttpResponse(json_result, content_type="application/json")
+
+def edit_post_vars(request):
+    question_text = request.POST.get('question', '')
+    answers = request.POST.getlist('answers[]')
+    correct_index =  int(request.POST.get('correct', ''))
+    return question_text, answers, correct_index
 
 def delete(request):
     if request.method != 'POST':
@@ -109,26 +131,25 @@ def return_json(result, code = 200):
 def questions_with_answer(key):
     q_model = Question.objects.get(pk=key)
 
-
-    correct = Answer.objects.filter(question=key, correct=True).values('choice', 'id');
+    correct = Answer.objects.filter(question=key, correct=True).values('choice', 'id')
     wrong_ans = {}
     wrong = Answer.objects.filter(question=key, correct=False).values('choice', 'id')
     for i in wrong:
         wrong_ans[i['id']] = i['choice']
 
 
-    answer = {}
-
-    if (correct.count()):
-        answer.correct['id'] = correct['choice']
-
-
     question = {
         'id': q_model.id,
         'question': q_model.question,
-        'correct_answer': answer,
-        'wrong_answers': wrong_ans
+        'wrong_answers': wrong_ans,
     }
+
+    question['correct_answer'] = {}
+
+    if correct:
+        question['correct_answer'] = {correct[0]['id']: correct[0]['choice']}
+
+
     return question
 
 def is_number(s):

@@ -53,6 +53,22 @@ $(document).ready(function(){
 
     $('#save_answer').click(function(){
 
+        if($('.a_correct:checked').size() == 0)
+        {
+            alert('You must select a correct answer.')
+            return false;
+        }
+        if(!$('#q_edit .answer').size())
+        {
+            alert('You must select a have at least one answer.')
+            return false;
+        }
+        if($('#a_question').val().trim().length < 2)
+        {
+            alert('Please enter a valid question.')
+            return false;
+        }
+
         var correct_index = -1;
         var answers = [];
 
@@ -73,13 +89,21 @@ $(document).ready(function(){
             id: $('#a_id').val()
         }
 
+        console.log(data)
+
         if(data.correct_index == -1 || data.question.trim().length < 3)
             return false;
 
-        var url = (data.id == '-1') ? 'questions/new' : 'questions/' + data.id + '/edit'
+        var url = (data.id == '-1') ? 'questions/new' : 'questions/' + data.id + '/update'
 
         $.post(url, data, function(data){
-            console.log(data)
+            if(data.result == 'success')
+            {
+                $('#edit_wrapper').fadeOut()
+                $('#i_reload').click()
+            }else{
+                alert('error')
+            }
         });
 
         return false;
