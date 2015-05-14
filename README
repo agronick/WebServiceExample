@@ -1,10 +1,9 @@
-Run
-
+To install the project run:
 python manage.py migrate
 python manage.py populate_db
 easy_install simplejson
 
-/questions?order&limit&skip
-/questions/id
-/questions/id/edit
-/questions/create
+The client can be found on the webroot. It has no connection with the rest of the site except through the web service.
+It was built into the same project to eliminate cross domain request issues.
+
+
