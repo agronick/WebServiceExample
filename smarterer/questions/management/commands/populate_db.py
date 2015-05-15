@@ -14,19 +14,31 @@ class Command(BaseCommand):
         Answer.objects.all().delete()
         print('Deleted existing data')
 
-
+        answers = []
         with open(settings.BASE_DIR + '/../' + self.csv_file, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter='|')
             next(reader, None)
+
             for row in reader:
+
+                if(len(answers) > 80):
+                    save_answers(answers)
+                    answers = []
+
 
                 q = Question(question=row[0])
                 q.save()
+
                 print('Saved question with id ' + str(q.id));
 
-                a = Answer(question=q, choice=row[1], correct=True)
-                a.save()
+                answers.append(Answer(question=q, choice=row[1], correct=True))
 
                 for i in row[2].split(','):
-                    aw = Answer(question=q, choice=i, correct=False)
-                    aw.save()
+                    answers.append(Answer(question=q, choice=i, correct=False))
+
+        save_answers(answers)
+
+
+def save_answers(answers):
+    Answer.objects.bulk_create(answers)
+    print('Saved batch of ' + str(len(answers)) + ' answers')
